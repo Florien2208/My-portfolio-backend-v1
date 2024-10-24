@@ -1,7 +1,8 @@
-// controllers/user.controller.ts
 import { Request, Response, NextFunction } from "express";
 import multer from "multer";
 import sharp from "sharp";
+import fs from "fs";
+import path from "path";
 import { AppError } from "../utils/AppError";
 import { User } from "../models/User.model";
 
@@ -32,6 +33,15 @@ const catchAsync = (fn: Function) => {
   };
 };
 
+// Ensure upload directory exists
+const createUploadDirectoryIfNotExists = () => {
+  const uploadDir = path.join(process.cwd(), "public", "img", "users");
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+  return uploadDir;
+};
+
 export const userController = {
   uploadUserPhoto: upload.single("photo"),
 
@@ -39,13 +49,15 @@ export const userController = {
     async (req: Request, res: Response, next: NextFunction) => {
       if (!req.file) return next();
 
-      req.file.filename = `user-${req.params.id}-${Date.now()}.jpeg`;
+      const uploadDir = createUploadDirectoryIfNotExists();
+
+      req.file.filename = `user-${req.params.id || "new"}-${Date.now()}.jpeg`;
 
       await sharp(req.file.buffer)
         .resize(500, 500)
         .toFormat("jpeg")
         .jpeg({ quality: 90 })
-        .toFile(`public/img/users/${req.file.filename}`);
+        .toFile(path.join(uploadDir, req.file.filename));
 
       next();
     }
@@ -77,16 +89,15 @@ export const userController = {
       name: req.body.name,
       email: req.body.email,
       location: req.body.location,
-      role: req.body.role,
+      role: req.body.role || "user",
       password: req.body.password,
-      passwordConfirm: req.body.passwordConfirm,
       photo: req.file ? req.file.filename : "default.jpg",
     });
 
     // Remove password from output
-   const userWithoutPassword = newUser.toObject();
-   delete userWithoutPassword.password;
-   delete userWithoutPassword.passwordConfirm;
+    const userWithoutPassword = newUser.toObject();
+    
+    
 
     res.status(201).json({
       status: "success",

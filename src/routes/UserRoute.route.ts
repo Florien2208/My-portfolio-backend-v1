@@ -5,6 +5,86 @@ const router = Router();
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - name
+ *         - email
+ *         - location
+ *         - password
+ *         - passwordConfirm
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: Auto-generated MongoDB ObjectId
+ *         name:
+ *           type: string
+ *           minLength: 1
+ *           maxLength: 50
+ *           example: John Doe
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: john@example.com
+ *         location:
+ *           type: string
+ *           example: New York, USA
+ *         role:
+ *           type: string
+ *           enum: [user, admin, moderator]
+ *           default: user
+ *         photo:
+ *           type: string
+ *           default: default.jpg
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *   responses:
+ *     ValidationError:
+ *       description: Validation failed
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 example: fail
+ *               message:
+ *                 type: string
+ *                 example: Validation failed
+ *     NotFoundError:
+ *       description: Resource not found
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 example: fail
+ *               message:
+ *                 type: string
+ *                 example: Resource not found
+ *     DuplicateError:
+ *       description: Duplicate field value
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 example: fail
+ *               message:
+ *                 type: string
+ *                 example: Email already exists
+ */
+
+/**
+ * @swagger
  * tags:
  *   name: Users
  *   description: User management endpoints
@@ -28,18 +108,15 @@ const router = Router();
  *                 status:
  *                   type: string
  *                   example: success
+ *                 results:
+ *                   type: number
+ *                   example: 1
  *                 data:
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/User'
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
 router.get("/", userController.getAllUsers);
 
@@ -53,21 +130,43 @@ router.get("/", userController.getAllUsers);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
  *               - name
  *               - email
+ *               - location
+ *               - password
+ *               - passwordConfirm
  *             properties:
  *               name:
  *                 type: string
- *                 minLength: 3
+ *                 minLength: 1
+ *                 maxLength: 50
  *                 example: John Doe
  *               email:
  *                 type: string
  *                 format: email
  *                 example: john@example.com
+ *               location:
+ *                 type: string
+ *                 example: New York, USA
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *                 example: password123
+ *               passwordConfirm:
+ *                 type: string
+ *                 format: password
+ *                 example: password123
+ *               role:
+ *                 type: string
+ *                 enum: [user, admin, moderator]
+ *               photo:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
  *         description: User created successfully
@@ -85,14 +184,13 @@ router.get("/", userController.getAllUsers);
  *         $ref: '#/components/responses/ValidationError'
  *       409:
  *         $ref: '#/components/responses/DuplicateError'
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
-router.post("/", userController.createUser);
+router.post(
+  "/",
+  userController.uploadUserPhoto,
+  userController.resizeUserPhoto,
+  userController.createUser
+);
 
 /**
  * @swagger
@@ -123,12 +221,6 @@ router.post("/", userController.createUser);
  *                   $ref: '#/components/schemas/User'
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
- *       400:
- *         description: Invalid ID format
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
 router.get("/:id", userController.getUser);
 
@@ -149,16 +241,22 @@ router.get("/:id", userController.getUser);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               name:
  *                 type: string
- *                 minLength: 3
+ *                 minLength: 1
+ *                 maxLength: 50
  *               email:
  *                 type: string
  *                 format: email
+ *               location:
+ *                 type: string
+ *               photo:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: User updated successfully
@@ -176,10 +274,13 @@ router.get("/:id", userController.getUser);
  *         $ref: '#/components/responses/ValidationError'
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
- *       409:
- *         $ref: '#/components/responses/DuplicateError'
  */
-router.patch("/:id", userController.updateUser);
+router.patch(
+  "/:id",
+  userController.uploadUserPhoto,
+  userController.resizeUserPhoto,
+  userController.updateUser
+);
 
 /**
  * @swagger
@@ -200,12 +301,6 @@ router.patch("/:id", userController.updateUser);
  *         description: User deleted successfully
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
- *       400:
- *         description: Invalid ID format
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
 router.delete("/:id", userController.deleteUser);
 
