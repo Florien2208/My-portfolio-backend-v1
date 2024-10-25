@@ -96,8 +96,6 @@ export const userController = {
 
     // Remove password from output
     const userWithoutPassword = newUser.toObject();
-    
-    
 
     res.status(201).json({
       status: "success",
