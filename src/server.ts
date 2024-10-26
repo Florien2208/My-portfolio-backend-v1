@@ -44,7 +44,7 @@ mongoose
 
 // Basic route
 app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Welcome to TypeScript Express API" });
+  res.json({ message: "Welcome to Florien Portfolio Backend v1 API" });
 });
 
 // Start server
