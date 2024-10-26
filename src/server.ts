@@ -8,6 +8,7 @@ import { errorHandler } from "./middleware/errorMiddleware";
 import { AppError } from "./utils/AppError";
 import authRoutes from "./routes/auth.route";
 import { experienceRoutes } from "./routes/experience.route";
+import cors from "cors";
 
 
 
@@ -15,7 +16,11 @@ dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 9000;
-
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Replace with your frontend's URL
+  })
+);
 // Middleware
 app.use(express.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
