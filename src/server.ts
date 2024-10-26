@@ -3,12 +3,12 @@ import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
 import { specs } from "./config/swagger";
 import dotenv from "dotenv";
-import userRoutes from "./routes/UserRoute.route";
+
 import { errorHandler } from "./middleware/errorMiddleware";
 import { AppError } from "./utils/AppError";
-import authRoutes from "./routes/auth.route";
-import { experienceRoutes } from "./routes/experience.route";
+
 import cors from "cors";
+import apiRouter from "./routes";
 
 
 
@@ -25,11 +25,7 @@ app.use(
 app.use(express.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 // MongoDB connection
-app.use("/api/users", userRoutes);
-// Handle undefined routes
-app.use("/api/experiences", experienceRoutes);
-
-app.use("/api/auth", authRoutes);
+app.use("/api", apiRouter);
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
   next(new AppError(404, 'fail', `Can't find ${req.originalUrl} on this server!`));
 });
