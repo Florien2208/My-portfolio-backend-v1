@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { ExperienceService } from "./services/experience.service";
 
-
 export class ExperienceController {
   private experienceService: ExperienceService;
 
@@ -23,13 +22,11 @@ export class ExperienceController {
   getAllExperiences = async (_req: Request, res: Response): Promise<void> => {
     try {
       const experiences = await this.experienceService.getAllExperiences();
-      res
-        .status(200)
-        .json({
-          message: "Experiences fetched successfully",
-          result: experiences.length,
-          data: experiences,
-        });
+      res.status(200).json({
+        message: "Experiences fetched successfully",
+        result: experiences.length,
+        data: experiences,
+      });
     } catch (error) {
       res.status(500).json({ message: "Error fetching experiences", error });
     }

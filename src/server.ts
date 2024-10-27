@@ -10,8 +10,6 @@ import { AppError } from "./utils/AppError";
 import cors from "cors";
 import apiRouter from "./routes";
 
-
-
 dotenv.config();
 
 const app: Express = express();
@@ -26,8 +24,10 @@ app.use(express.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 // MongoDB connection
 app.use("/api", apiRouter);
-app.all('*', (req: Request, res: Response, next: NextFunction) => {
-  next(new AppError(404, 'fail', `Can't find ${req.originalUrl} on this server!`));
+app.all("*", (req: Request, res: Response, next: NextFunction) => {
+  next(
+    new AppError(404, "fail", `Can't find ${req.originalUrl} on this server!`)
+  );
 });
 
 // Global error handling middleware
