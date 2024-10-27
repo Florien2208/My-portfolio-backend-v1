@@ -1,120 +1,186 @@
-import { Router } from "express";
-import { createContact, deleteContact, getContactById, getContacts, updateContact } from "../controllers/contact.controller";
+// src/routes/contact.routes.ts
+import express from "express";
+import { ContactController } from "../controllers/contact.controller";
 
-
-const router = Router();
-
-/**
- * @swagger
- * tags:
- *   name: Contact
- *   description: CRUD operations for contact submissions
- */
-
-// Create a contact
-router.post("/submit", createContact);
+const router = express.Router();
 
 /**
  * @swagger
- * /api/contact/:
- *   get:
- *     summary: Get all contact submissions
- *     tags: [Contact]
- *     responses:
- *       200:
- *         description: List of all contacts
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   _id:
- *                     type: string
- *                   name:
- *                     type: string
- *                   email:
- *                     type: string
- *                   message:
- *                     type: string
- */
-router.get("/", getContacts);
-
-/**
- * @swagger
- * /api/contact/{id}:
- *   get:
- *     summary: Get a contact submission by ID
- *     tags: [Contact]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
+ * components:
+ *   schemas:
+ *     Contact:
+ *       type: object
+ *       required:
+ *         - name
+ *         - email
+ *         - subject
+ *         - message
+ *       properties:
+ *         _id:
  *           type: string
- *         required: true
- *         description: Contact ID
- *     responses:
- *       200:
- *         description: Contact found
- *       404:
- *         description: Contact not found
+ *           description: Auto-generated MongoDB ID
+ *         name:
+ *           type: string
+ *           description: Name of the person sending the message
+ *           minLength: 2
+ *           maxLength: 50
+ *         email:
+ *           type: string
+ *           description: Email address of the sender
+ *           format: email
+ *         subject:
+ *           type: string
+ *           description: Subject of the message
+ *           minLength: 5
+ *           maxLength: 100
+ *         message:
+ *           type: string
+ *           description: Content of the message
+ *           minLength: 10
+ *           maxLength: 1000
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp of when the contact was created
+ *
+ *     Error:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         message:
+ *           type: string
+ *           example: Error message
  */
-router.get("/:id", getContactById);
 
 /**
  * @swagger
- * /api/contact/{id}:
- *   put:
- *     summary: Update a contact submission by ID
- *     tags: [Contact]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: Contact ID
+ * /api/contacts:
+ *   post:
+ *     summary: Create a new contact message
+ *     tags: [Contacts]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - subject
+ *               - message
  *             properties:
  *               name:
  *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
  *               email:
  *                 type: string
+ *                 format: email
+ *               subject:
+ *                 type: string
+ *                 minLength: 5
+ *                 maxLength: 100
  *               message:
  *                 type: string
+ *                 minLength: 10
+ *                 maxLength: 1000
  *     responses:
- *       200:
- *         description: Contact updated successfully
- *       404:
- *         description: Contact not found
+ *       201:
+ *         description: Contact message created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Contact'
+ *       400:
+ *         description: Invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-router.put("/:id", updateContact);
+router.post("/", ContactController.createContact);
 
 /**
  * @swagger
- * /api/contact/{id}:
- *   delete:
- *     summary: Delete a contact submission by ID
- *     tags: [Contact]
+ * /api/contacts:
+ *   get:
+ *     summary: Retrieve all contact messages
+ *     tags: [Contacts]
+ *     responses:
+ *       200:
+ *         description: List of all contact messages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 count:
+ *                   type: integer
+ *                   description: Total number of contacts
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Contact'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/", ContactController.getAllContacts);
+
+/**
+ * @swagger
+ * /api/contacts/{id}:
+ *   get:
+ *     summary: Get a contact message by ID
+ *     tags: [Contacts]
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: string
- *         required: true
- *         description: Contact ID
+ *         description: MongoDB ID of the contact message
  *     responses:
  *       200:
- *         description: Contact deleted successfully
+ *         description: Contact message found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Contact'
  *       404:
  *         description: Contact not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-router.delete("/:id", deleteContact);
+router.get("/:id", ContactController.getContact);
 
 export default router;
