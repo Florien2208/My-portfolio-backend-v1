@@ -13,14 +13,25 @@ import apiRouter from "./routes";
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT || 9000;
+const port = process.env.PORT ;
 app.use(
   cors({
-    origin: "http://localhost:5173", // Replace with your frontend's URL
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:9000",
+      "https://my-portfolio-backend-v1.onrender.com",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 // Middleware
 app.use(express.json());
+app.get("/", (req: Request, res: Response) => {
+  res.send(
+    `Welcome to Florien Portfolio Backend v1 API Swagger documentation available at:  <a href="https://my-portfolio-backend-v1.onrender.com/api-docs " target="_blank">Docs</a>`
+  );
+});
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 // MongoDB connection
 app.use("/api", apiRouter);
@@ -33,8 +44,12 @@ app.all("*", (req: Request, res: Response, next: NextFunction) => {
 // Global error handling middleware
 app.use(errorHandler);
 
+if (!process.env.MONGODB_URI) {
+  throw new Error("MONGODB_URI is not defined in environment variables");
+}
+
 mongoose
-  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/MY-PORTFOLIO")
+  .connect(process.env.MONGODB_URI )
   .then(() => {
     console.log("Connected to MongoDB");
   })
@@ -43,9 +58,6 @@ mongoose
   });
 
 // Basic route
-app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Welcome to Florien Portfolio Backend v1 API" });
-});
 
 // Start server
 app.listen(port, () => {

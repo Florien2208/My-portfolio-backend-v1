@@ -6,12 +6,16 @@ const options = {
     info: {
       title: "TypeScript Express API",
       version: "1.0.0",
-      description: "A simple Express API built with TypeScript",
+      description: "Florien's Portifolio backend using typescript",
     },
     servers: [
       {
         url: "http://localhost:9000",
         description: "Development server",
+      },
+      {
+        url: "https://my-portfolio-backend-v1.onrender.com/",
+        description: "Online server",
       },
     ],
     components: {
