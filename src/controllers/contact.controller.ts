@@ -29,6 +29,7 @@ export class ContactController {
       });
     }
   }
+
   static async getAllContacts(
     req: Request,
     res: Response,
